@@ -1,32 +1,19 @@
-const scene = document.querySelector('.scene');
+const cursor=document.querySelector('.cursor');
+window.addEventListener('pointermove',e=>{cursor.style.left=e.clientX+'px';cursor.style.top=e.clientY+'px'});
 
-document.addEventListener('mousemove', (e) => {
-  const x = (e.clientX / window.innerWidth - 0.5) * 2;
-  const y = (e.clientY / window.innerHeight - 0.5) * 2;
-
-  document.querySelectorAll('.orb').forEach((orb, i) => {
-    const distance = (i + 1) * 7;
-    orb.style.transform = `translate(${x * distance}px, ${y * distance}px)`;
-  });
+const cube=document.querySelector('.cube');
+let dragging=false,lastX=0,lastY=0,rx=-16,ry=0;
+cube.addEventListener('pointerdown',e=>{dragging=true;lastX=e.clientX;lastY=e.clientY;cube.setPointerCapture(e.pointerId)});
+cube.addEventListener('pointermove',e=>{
+ if(!dragging)return;
+ ry+=(e.clientX-lastX)*.6; rx-=(e.clientY-lastY)*.45;
+ rx=Math.max(-65,Math.min(65,rx));
+ cube.style.animation='none';
+ cube.style.transform=`rotateX(${rx}deg) rotateY(${ry}deg)`;
+ lastX=e.clientX;lastY=e.clientY;
 });
+['pointerup','pointercancel'].forEach(ev=>cube.addEventListener(ev,()=>dragging=false));
 
-const cube = document.querySelector('.cube');
-
-if (cube) {
-  let paused = false;
-
-  cube.addEventListener('mouseenter', () => {
-    paused = true;
-  });
-
-  cube.addEventListener('mouseleave', () => {
-    paused = false;
-  });
-
-  setInterval(() => {
-    if (!paused) {
-      cube.style.transform =
-        `rotateX(${Date.now() / 45 % 360}deg) rotateY(${Date.now() / 60 % 360}deg)`;
-    }
-  }, 50);
-}
+const items=document.querySelectorAll('.section,.experience article,.skill-grid>div,.projects article,.education>div');
+const io=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')}),{threshold:.08});
+items.forEach(x=>{x.classList.add('reveal');io.observe(x)});
